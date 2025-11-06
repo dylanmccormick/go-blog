@@ -6,28 +6,34 @@ I'm building this blog to share my learning of golang and other technologies in 
 ## Learning Goals:
 
 ### General / Why:
-1. Learning how to write better.
+- Learning how to write better.
     - I think that writing is one of the most important skills someone can have. I think that the way someone writes is the best way to see how they think
 
 ### What I'm Learning From This App
-1. Learning more about Go and HTMX
-    - HTMX is one of the hot new things and interesting to have server-side rendering of your html. Does it make things faster? Who knows!
-2. Learning more about how to build an MVP and iterate on a project. Trying to get better at planning and creating new things from scratch and evolving them over time
+- Learning more about Go and Building websites with Go
+- Learning more about how to build an MVP and iterate on a project. Trying to get better at planning and creating new things from scratch and evolving them over time
 
 ## Tech Stack
-1. Go -- I want to get better at Go and be a Gopher
-2. Templ -- Learn more about templated UI systems. I have some knowledge in JS so why not MORE GO
-3. HTMX -- Server-side rendering is a cool thing. Only send HTML over the internet
+- Go -- I want to get better at Go and be a Gopher
+- More go -- Standard library is the way (star wars meme)
+
+## Architecture
+- Markdown files stored in /posts directory
+- Go server reads files on startup
+- Templ renders HTML
+- Server reads markdown files and parses frontmatter for metadata
 
 ## Features (v1 Scope)
-1. Visitors can see the home page and click on a blog to retrieve the full, rendered markdown
-2. Visitors can scroll through previous blog posts
-3. The owner will be able to create new blog posts by adding a file to the server (SFTP)
+- Home page (`/`) displays about section and 3 most recent blog posts as cards
+- Blog listing page (`/blog`) shows all posts chronologically
+- Individual post pages (`/blog/{slug}`) render full markdown content
+- Posts are stored as markdown files on the server
+- New posts added via SFTP to server directory
 
 ## Future Ideas
-1. SQLite DB (If I want comments or something)
-2. Typst support (instead of markdown)
-3. Portfolio page with Github api integration
+- SQLite DB (If I want comments or something)
+- Typst support (instead of markdown)
+- Portfolio page with Github api integration
 
 ## Setup and Running
 <!-- TODO -->

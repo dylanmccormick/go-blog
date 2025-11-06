@@ -1,0 +1,14 @@
+package main
+
+templ hello(name string) {
+	<div>Hello, { name }</div>
+}
+
+templ mkdwn(mkdwn string) {
+	<!DOCTYPE html>
+	<html>
+		<div>
+			 @templ.Raw(mkdwn)
+		</div>
+	</html>
+}
