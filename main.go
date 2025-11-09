@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/parser"
@@ -37,16 +38,15 @@ func loadPosts() {
 
 func main() {
 	loadPosts()
-	http.HandleFunc("/hello", handler)
 	http.HandleFunc("/blog/{slug}", blogHandler)
 	fmt.Println("Listening on :3000")
 	http.ListenAndServe(":3000", nil)
 }
 
 type MarkdownPost struct {
-	Title        string `yaml:"title"`
-	OriginalDate string `yaml:"original_date"`
-	LastUpdated  string `yaml:"last_updated"`
+	Title        string    `yaml:"title"`
+	OriginalDate time.Time `yaml:"original_date"`
+	LastUpdated  string    `yaml:"last_updated"`
 	Body         template.HTML
 }
 
@@ -59,6 +59,7 @@ func blogHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	log.Printf("%#v\n", mdPost.OriginalDate)
 	const tpl = `
 	<!DOCTYPE html>
 	<html>
@@ -79,37 +80,13 @@ func blogHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.New("blogpage").Parse(tpl)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	err = t.Execute(w, mdPost)
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	file, err := os.ReadFile("./hello_world.md")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Uh oh couldn't write post")
 	}
-	const tpl = `
-	<!DOCTYPE html>
-	<html>
-		<title>
-			{{.Title}}
-		</title>
-		<body>
-			<div>
-				{{.Body}}
-			<div>
-			<div>
-				Last updated:{{.LastUpdated}}
-			</div>
-		</body>
-	</html>
-	`
-
-	t, err := template.New("blogpage").Parse(tpl)
-	markdown := MarkdownToHtml(string(file))
-
-	err = t.Execute(w, markdown)
 }
 
 func MarkdownToHtml(content string) MarkdownPost {
