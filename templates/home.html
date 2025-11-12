@@ -7,15 +7,22 @@
 </head>
 
 <body>
-	<h1>Blog Posts</h1>
-	{{ range . }}
-	<a href="/blog/{{ .Slug }}">{{ .Title }}</a>
-	</br>
-	{{ end }}
+	<div class="basic">
+		{{ range . }}
+		<div class="card">
+			<div class="date">{{ .FormattedDate }}</div>
+			<h2>
+				<a href="/blog/{{ .Slug }}">{{ .Title }}</a>
+			</h2>
+			<p>{{ .Preview }}</p>
+		</div>
+		</br>
+		{{ end }}
 
-	<footer>
-		<p> This is my footer... It is cool </p>
-	</footer>
+		<footer>
+			<p> This is my footer... It is cool </p>
+		</footer>
+	</div>
 </body>
 
 </html>

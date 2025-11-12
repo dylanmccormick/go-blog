@@ -1,4 +1,64 @@
 .basic {
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
+}
+
+.date {
+  color: #7a8478;
+  font-size: 14px;
+  text-align: center;
+}
+
+.card {
+  border-radius: 5px;
+  box-shadow: 0 4px 8px 0 #232a2e;
+  border: 1px solid #425047;
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px 0 #232a2e;
+}
+
+.card h2 {
+  text-align: center;
+  font-size: 34px;
+}
+
+.card p {
+  margin: 20px;
+}
+
+body {
+  color: #d3c6aa;
+  background-color: #2d353b;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+a,
+a:visited {
+  color: #83c092;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: #a7c080;
+}
+
+h1 {
+  text-align: center;
+  margin-top: 0;
+}
+
+footer {
+  color: #7a8478;
+}
+
+a:hover,
+a:focus,
+a:active {
+  text-decoration: underline;
 }

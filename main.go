@@ -41,6 +41,8 @@ func loadPosts() {
 		}
 		markdown := MarkdownToHtml(string(file))
 		markdown.Slug = slug
+		markdown.FormattedDate = markdown.OriginalDate.Format("January 2, 2006")
+		markdown.Preview = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tempor, eros vel posuere consequat, nulla enim porttitor."
 
 		postsStore[slug] = markdown
 		postsList = append(postsList, markdown)
@@ -60,11 +62,13 @@ func main() {
 }
 
 type MarkdownPost struct {
-	Title        string    `yaml:"title"`
-	OriginalDate time.Time `yaml:"original_date"`
-	LastUpdated  string    `yaml:"last_updated"`
-	Body         template.HTML
-	Slug         string
+	Title         string    `yaml:"title"`
+	OriginalDate  time.Time `yaml:"original_date"`
+	LastUpdated   string    `yaml:"last_updated"`
+	Body          template.HTML
+	Slug          string
+	FormattedDate string
+	Preview       string
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
