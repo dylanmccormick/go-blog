@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>Blog Home</title>
+	<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+	<h1>Blog Posts</h1>
+	{{ range . }}
+	<a href="/blog/{{ .Slug }}">{{ .Title }}</a>
+	</br>
+	{{ end }}
+
+	<footer>
+		<p> This is my footer... It is cool </p>
+	</footer>
+</body>
+
+</html>

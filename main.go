@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -16,7 +17,15 @@ import (
 	"go.abhg.dev/goldmark/frontmatter"
 )
 
-var postsStore = make(map[string]MarkdownPost)
+var (
+	postsStore = make(map[string]MarkdownPost)
+	postsList  = make([]MarkdownPost, 0)
+	templates  *template.Template
+)
+
+func init() {
+	templates = template.Must(template.ParseFiles("./templates/blog.html", "./templates/home.html"))
+}
 
 func loadPosts() {
 	files, err := filepath.Glob("./posts/*")
@@ -31,14 +40,21 @@ func loadPosts() {
 			log.Fatal(err)
 		}
 		markdown := MarkdownToHtml(string(file))
+		markdown.Slug = slug
 
 		postsStore[slug] = markdown
+		postsList = append(postsList, markdown)
 	}
+	slices.SortFunc(postsList, func(a, b MarkdownPost) int {
+		return a.OriginalDate.Compare(b.OriginalDate) * -1
+	})
 }
 
 func main() {
 	loadPosts()
+	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/blog/{slug}", blogHandler)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	fmt.Println("Listening on :3000")
 	http.ListenAndServe(":3000", nil)
 }
@@ -48,10 +64,20 @@ type MarkdownPost struct {
 	OriginalDate time.Time `yaml:"original_date"`
 	LastUpdated  string    `yaml:"last_updated"`
 	Body         template.HTML
+	Slug         string
+}
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	err := templates.ExecuteTemplate(w, "home.html", postsList)
+	if err != nil {
+		fmt.Println("Uh oh couldn't write post")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func blogHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("slug: %s", r.PathValue("slug"))
+	log.Printf("slug: %s\n", r.PathValue("slug"))
 	slug := r.PathValue("slug")
 	mdPost, ok := postsStore[slug]
 	if !ok {
@@ -60,32 +86,12 @@ func blogHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("%#v\n", mdPost.OriginalDate)
-	const tpl = `
-	<!DOCTYPE html>
-	<html>
-		<title>
-			{{.Title}}
-		</title>
-		<body>
-			<div>
-				{{.Body}}
-			<div>
-			<div>
-				Last updated:{{.LastUpdated}}
-			</div>
-		</body>
-	</html>
-	`
 
-	t, err := template.New("blogpage").Parse(tpl)
+	err := templates.ExecuteTemplate(w, "blog.html", mdPost)
 	if err != nil {
+		fmt.Println("Uh oh couldn't write post")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}
-
-	err = t.Execute(w, mdPost)
-	if err != nil {
-		log.Fatal("Uh oh couldn't write post")
 	}
 }
 
@@ -108,7 +114,6 @@ func MarkdownToHtml(content string) MarkdownPost {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%#v", meta)
 	meta.Body = template.HTML(buf.String())
 
 	return meta
