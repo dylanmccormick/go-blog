@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"html/template"
@@ -16,6 +17,8 @@ import (
 	"github.com/yuin/goldmark/parser"
 	"go.abhg.dev/goldmark/frontmatter"
 )
+
+const PREVIEW_CHARACTER_LIMIT = 300
 
 var (
 	postsStore = make(map[string]MarkdownPost)
@@ -42,7 +45,7 @@ func loadPosts() {
 		markdown := MarkdownToHtml(string(file))
 		markdown.Slug = slug
 		markdown.FormattedDate = markdown.OriginalDate.Format("January 2, 2006")
-		markdown.Preview = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tempor, eros vel posuere consequat, nulla enim porttitor."
+		markdown.Preview = generatePreview(file)
 
 		postsStore[slug] = markdown
 		postsList = append(postsList, markdown)
@@ -50,6 +53,43 @@ func loadPosts() {
 	slices.SortFunc(postsList, func(a, b MarkdownPost) int {
 		return a.OriginalDate.Compare(b.OriginalDate) * -1
 	})
+}
+
+func generatePreview(file []byte) string {
+	var builder strings.Builder
+	frontmatter := false
+	reader := bytes.NewReader(file)
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.EqualFold(line, "---") {
+			frontmatter = !frontmatter
+			continue
+		}
+
+		if frontmatter {
+			continue
+		}
+
+		if strings.HasPrefix(line, "# ") {
+			continue
+		}
+		words := strings.SplitSeq(line, " ")
+		for word := range words {
+			if builder.Len() < PREVIEW_CHARACTER_LIMIT {
+				builder.WriteString(" ")
+				builder.WriteString(word)
+			} else {
+				break
+			}
+		}
+		if builder.Len() >= PREVIEW_CHARACTER_LIMIT {
+			break
+		}
+
+	}
+
+	return builder.String() + "…"
 }
 
 func main() {

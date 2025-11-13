@@ -8,14 +8,21 @@
 
 <body>
 	<div class="basic">
+		<header>
+			<img class="header" src="/static/dexter.png" width="80" height="80" alt="Definitely a photo of Dylan" />
+			<h3 class="header">Dylan McCormick</h3>
+			<p> Creator of silly projects on the internet. Proud owner of a 2014 Honda CR-V. Maker of this website. </p>
+		</header>
 		{{ range . }}
-		<div class="card">
-			<div class="date">{{ .FormattedDate }}</div>
-			<h2>
-				<a href="/blog/{{ .Slug }}">{{ .Title }}</a>
-			</h2>
-			<p>{{ .Preview }}</p>
-		</div>
+		<a class="card-link" href="/blog/{{ .Slug }}">
+			<div class="card">
+				<div class="date">{{ .FormattedDate }}</div>
+				<h2>
+					{{ .Title }}
+				</h2>
+				<p>{{ .Preview }}</p>
+			</div>
+		</a>
 		</br>
 		{{ end }}
 
