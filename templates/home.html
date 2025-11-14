@@ -1,18 +1,17 @@
 <!doctype html>
-<html>
+<html lang="en-US">
 
 <head>
+	{{ template "fonts" }}
 	<title>Blog Home</title>
 	<link rel="stylesheet" href="/static/style.css">
 </head>
 
-<body>
-	<div class="basic">
-		<header>
-			<img class="header" src="/static/dexter.png" width="80" height="80" alt="Definitely a photo of Dylan" />
-			<h3 class="header">Dylan McCormick</h3>
-			<p> Creator of silly projects on the internet. Proud owner of a 2014 Honda CR-V. Maker of this website. </p>
-		</header>
+<body class="basic">
+	<div>
+		{{ template "header" }}
+		<p class="about"> Creator of silly projects on the internet. Proud owner of a 2014 Honda CR-V. Maker of this
+			website. </p>
 		{{ range . }}
 		<a class="card-link" href="/blog/{{ .Slug }}">
 			<div class="card">
@@ -26,9 +25,7 @@
 		</br>
 		{{ end }}
 
-		<footer>
-			<p> This is my footer... It is cool </p>
-		</footer>
+		{{ template "footer" }}
 	</div>
 </body>
 

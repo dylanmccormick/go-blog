@@ -2,16 +2,21 @@
 <html lang="en-US">
 
 <head>
+	{{ template "fonts" }}
 	<title>{{.Title}}</title>
 	<link rel="stylesheet" href="/static/style.css" />
 </head>
 
 <body class="basic">
+	{{ template "header" }}
 	<div class="date">{{.FormattedDate}}</div>
 	<div>{{.Body}}</div>
-	<footer>
-		<a href="/">Home</a>
-	</footer>
+	<h3 class="about">About Dylan McCormick</h3>
+	<p class="about">
+		Creator of silly projects on the internet. Proud owner of a 2014 Honda
+		CR-V. Maker of this website.
+	</p>
+	{{ template "footer" }}
 </body>
 
 </html>

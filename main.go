@@ -27,7 +27,7 @@ var (
 )
 
 func init() {
-	templates = template.Must(template.ParseFiles("./templates/blog.html", "./templates/home.html"))
+	templates = template.Must(template.ParseGlob("./templates/*.html"))
 }
 
 func loadPosts() {
