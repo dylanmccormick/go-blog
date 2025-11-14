@@ -36,7 +36,7 @@ func loadPosts() {
 		log.Println("Didn't get POSTS_DIR environment variable. Using default")
 		postsDir = "./posts"
 	}
-	files, err := filepath.Glob(postsDir)
+	files, err := filepath.Glob(filepath.Join(postsDir, "*"))
 	if err != nil {
 		log.Fatal("poop you couldn't load any files. Skill issue")
 	}
