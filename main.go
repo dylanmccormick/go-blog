@@ -31,7 +31,12 @@ func init() {
 }
 
 func loadPosts() {
-	files, err := filepath.Glob("./posts/*")
+	postsDir := os.Getenv("POSTS_DIR")
+	if postsDir == "" {
+		log.Println("Didn't get POSTS_DIR environment variable. Using default")
+		postsDir = "./posts"
+	}
+	files, err := filepath.Glob(postsDir)
 	if err != nil {
 		log.Fatal("poop you couldn't load any files. Skill issue")
 	}
