@@ -142,7 +142,11 @@ func watchForUpdates() {
 				if !ok {
 					return
 				}
+				log.Printf("File event: %s - %s\n", ev.Name, ev.Op)
 				if ev.Has(fsnotify.Create) {
+					log.Println("Waiting for file upload to complete")
+					time.Sleep(500 * time.Millisecond)
+					log.Println("Reloading posts")
 					loadPosts()
 				}
 			case err, ok := <-watcher.Errors:
