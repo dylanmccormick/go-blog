@@ -11,8 +11,10 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/parser"
 	"go.abhg.dev/goldmark/frontmatter"
@@ -24,6 +26,8 @@ var (
 	postsStore = make(map[string]MarkdownPost)
 	postsList  = make([]MarkdownPost, 0)
 	templates  *template.Template
+	postsDir   = os.Getenv("POSTS_DIR")
+	postMutex  sync.RWMutex
 )
 
 func init() {
@@ -31,7 +35,8 @@ func init() {
 }
 
 func loadPosts() {
-	postsDir := os.Getenv("POSTS_DIR")
+	newStore := make(map[string]MarkdownPost)
+	newList := make([]MarkdownPost, 0)
 	if postsDir == "" {
 		log.Println("Didn't get POSTS_DIR environment variable. Using default")
 		postsDir = "./posts"
@@ -40,7 +45,9 @@ func loadPosts() {
 	if err != nil {
 		log.Fatal("poop you couldn't load any files. Skill issue")
 	}
+
 	for _, post := range files {
+		log.Printf("Loading file %s\n", post)
 		fileName := filepath.Base(post)
 		slug := strings.TrimSuffix(fileName, ".md")
 		file, err := os.ReadFile(post)
@@ -52,12 +59,17 @@ func loadPosts() {
 		markdown.FormattedDate = markdown.OriginalDate.Format("January 2, 2006")
 		markdown.Preview = generatePreview(file)
 
-		postsStore[slug] = markdown
-		postsList = append(postsList, markdown)
+		newStore[slug] = markdown
+		newList = append(newList, markdown)
 	}
-	slices.SortFunc(postsList, func(a, b MarkdownPost) int {
+	slices.SortFunc(newList, func(a, b MarkdownPost) int {
 		return a.OriginalDate.Compare(b.OriginalDate) * -1
 	})
+
+	postMutex.Lock()
+	postsList = newList
+	postsStore = newStore
+	postMutex.Unlock()
 }
 
 func generatePreview(file []byte) string {
@@ -103,6 +115,7 @@ func main() {
 	http.HandleFunc("/blog/{slug}", blogHandler)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	fmt.Println("Listening on :3000")
+	go watchForUpdates()
 	http.ListenAndServe(":3000", nil)
 }
 
@@ -116,7 +129,42 @@ type MarkdownPost struct {
 	Preview       string
 }
 
+func watchForUpdates() {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Println("ERROR occurred creating watcher", err)
+	}
+	defer watcher.Close()
+	go func() {
+		for {
+			select {
+			case ev, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if ev.Has(fsnotify.Create) {
+					loadPosts()
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				log.Println("Error occurred with file watcher", err)
+			}
+		}
+	}()
+
+	err = watcher.Add(postsDir)
+	if err != nil {
+		log.Println("Unable to add watcher", err)
+	}
+
+	select {}
+}
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
+	postMutex.RLock()
+	defer postMutex.RUnlock()
 	err := templates.ExecuteTemplate(w, "home.html", postsList)
 	if err != nil {
 		fmt.Println("Uh oh couldn't write post")
@@ -126,6 +174,8 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func blogHandler(w http.ResponseWriter, r *http.Request) {
+	postMutex.RLock()
+	defer postMutex.RUnlock()
 	log.Printf("slug: %s\n", r.PathValue("slug"))
 	slug := r.PathValue("slug")
 	mdPost, ok := postsStore[slug]
